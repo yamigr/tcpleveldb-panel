@@ -335,7 +335,8 @@
                             }
                             else{
                                 self.database.value = (typeof data.data.value === 'object') ? JSON.stringify(data.data.value) : data.data.value
-                                self.loadData()
+                                self.docs = []
+                                self.docs.push(data.data)
                             }
                            
                         }, response => {});
@@ -347,7 +348,6 @@
                             let data = JSON.parse(response.body)
                             self.docs = data.data
                             self.err = data.err
-                            console.log(self.err)
                         }, response => {});
                     },
                     setDatabaseProps: function(data){
