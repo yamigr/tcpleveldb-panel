@@ -76,7 +76,7 @@ app.post('/api/tcpleveldb', function (req, res) {
 })
 
 // server listen
-var server = app.listen(process.env[2] || 8081, process.env[3] || 'localhost', function () {
+var server = app.listen(process.argv[2] || 8081, process.argv[3] || 'localhost', function () {
    var host = server.address().address
    var port = server.address().port
    console.log("tcpleveldb-panel listening at http://%s:%s", host, port)
