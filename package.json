@@ -1,0 +1,20 @@
+{
+  "name": "tcpleveldb-panel",
+  "version": "0.0.1",
+  "description": "A admin-panel to manage the tcpleveldb database.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "yannick grund, https://github.com/yamigr",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "bulma": "^0.7.1",
+    "express": "^4.16.3",
+    "ini": "^1.3.5",
+    "tcpleveldb": "0.0.7",
+    "vue": "^2.5.17",
+    "vue-resource": "^1.5.1"
+  }
+}

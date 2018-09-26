@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>TCPLEVELDB-PANEL</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+		<!-- Bulma Version 0.7.1-->
+        <link rel="stylesheet" href="/bulma/bulma.min.css" />
+        <link rel="stylesheet" href="/css/main.css" />
+        <script src="/vue/dist/vue.js"></script>
+        <script src="/vue-resource/dist/vue-resource.js"></script>
+	</head>
+	<body>
+
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                    <div class="navbar-brand">
+                      <a class="navbar-item" href="/">
+                       <h1 class="subtitle is-3">TCPLEVELDB-PANEL</h1>
+                      </a>
+                    </div>
+                  </nav>
+
+
+            <div id="app">
+
+            <section class="hero is-info">
+                    <div class="hero-body">
+
+                        <div class="container">
+                        <h1 class="title">
+                            Edit
+                        </h1>
+   
+                        <h2 class="subtitle" id="edit">API</h2>
+
+                            <!-- FORM for API -->
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal">
+                                    <label class="label">DB</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                    <p class="control">
+                                        <div class="select">
+                                            <select v-model="database.db">
+                                                <option v-for="value in config" :value="value.db">{{value.db}}</option>
+                                            </select>
+                                        </div>
+                                    </p>
+                                    <div v-if="err" class="box is-danger">
+                                        {{err}}
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal">
+                                    <label class="label">Meta</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                    <p class="control">
+                                            <div class="select">
+                                            <select v-model="database.meta">
+                                                <option v-for="value in options" :value="value">{{value}}</option>
+                                            </select>
+                                            </div>
+                                    </p>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <div class="field is-horizontal" v-if="database.meta === 'get' || database.meta === 'put' || database.meta === 'update' || database.meta === 'del'">
+                                <div class="field-label is-normal">
+                                    <label class="label">Key</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                    <p class="control">
+                                        <input class="input is-rounded" type="text" v-model="database.key" placeholder="Enter the key">
+                                    </p>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <div class="field is-horizontal" v-if="database.meta === 'put' || database.meta === 'update' || database.meta === 'filter'">
+                                <div class="field-label is-normal">
+                                    <label class="label">Value</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                    <p class="control">
+                                        <input class="input is-rounded" type="text" v-model="database.value" placeholder="Enter the value">
+                                    </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field is-horizontal" v-else-if="database.meta === 'stream' || database.meta === 'count'">
+                                <div class="field-label is-normal">
+                                    <label class="label">Options</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                    <p class="control">
+                                        <input class="input is-rounded" type="text" v-model="opt.gte" placeholder="gte">
+                                        <input class="input is-rounded" type="text" v-model="opt.lte" placeholder="lte, use ~ at the end">
+                                        <input class="input is-rounded" type="text" v-model="opt.gt" placeholder="gt">
+                                        <input class="input is-rounded" type="text" v-model="opt.lt" placeholder="lt, use ~ at the end">
+                                        <input class="input is-rounded" type="text" v-model="opt.start" placeholder="start">
+                                        <input class="input is-rounded" type="text" v-model="opt.end" placeholder="end">
+                                        <!--<input class="input is-rounded" type="number"v-model="opt.limit"  value="-1" placeholder="limit"> don't work by levelup. Bug report needed -->
+                                        <label class="checkbox">
+                                                <input type="checkbox" v-model="opt.reverse">
+                                                Reverse
+                                        </label><br>
+                                    </p>
+                                    <p class="text">
+                                        {{opt_example}}
+                                    </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field is-horizontal" v-else-if="database.meta === 'batch'">
+                                <div class="field-label is-normal">
+                                    <label class="label">Batch</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                    <p class="control">
+                                        <textarea class="textarea"  v-model="database.value" placeholder="Enter the batch"></textarea>
+                                    </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal">
+                                    <label class="label">Query</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                    <p class="control">
+                                            <button class="button is-success is-large" @click="action">Send</button>
+                                    </p>
+                                    </div>
+                                </div>
+                            </div>    
+                            <br>
+                            <!-- ADD DATABASE MODAL -->   
+                            <h2 class="subtitle" id="edit">Panel-Configuration</h2>       
+                            <button class="button is-medium is-warning" @click="addDatabaseActive = true">  
+                                    <span class="icon">
+                                        <i class="fa fa-plus"></i>
+                                    </span>
+                                    <span>Database</span>
+                            </button>
+                            <br><br>
+                            <button class="button is-medium is-danger" @click="deleteIniDb">    
+                                <span class="icon">
+                                    <i class="fa fa-trash"></i>
+                                </span>
+                                <span>Database</span>
+                            </button>
+                            
+                            <!-- MODAL-->
+                            <div class="modal"  v-bind:class="{ 'is-active' : addDatabaseActive }">
+                                    <div class="modal-background"></div>
+                                    <div class="modal-card">
+                                      <header class="modal-card-head">
+                                        <p class="modal-card-title">Add database</p>
+                                        <button class="delete" aria-label="close" @click="addDatabaseActive = false"></button>></button>
+                                      </header>
+                                      <section class="modal-card-body">
+                                            <div class="field is-horizontal" v-for="(dbdata, index) in newdb">
+                                                    <div class="field-label is-normal">
+                                                        <label class="label">{{index.toUpperCase()}}</label>
+                                                    </div>
+                                                    <div class="field-body">
+                                                        <div class="field">
+                                                        <p class="control">
+                                                            <input class="input is-rounded" :type="getType(dbdata)" v-model="newdb[index]">
+                                                        </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                      </section>
+                                      <footer class="modal-card-foot">
+                                        <button class="button is-success" @click="saveNewDatabase">Save</button>
+                                      </footer>
+                                    </div>
+                                  </div>
+                            </div>
+                    </div>
+                
+            </section>
+
+            <!-- Database viewer -->
+            <section class="hero">
+                    <div class="hero-body">
+                        <div class="container">
+                                <h1 class="title">
+                                        DATABASE
+                                    </h1>
+                        <div class="notification">
+                            <article class="tile is-child notification is-light" v-for="(doc, index) in docs">
+                                <div class="strike">
+                                        <span>#{{ index + 1}}</span>
+                                </div>
+                                <p class="title">KEY: {{doc.key ? doc.key : '-'}}</p>
+                                <p class="subtitle">
+                                     VALUE: {{doc.value}}
+                                </p>
+                                <p class="content">
+                                        <a class="button is-info" href="#edit" @click="setDatabaseProps(doc)"><i class="fa fa-pencil" aria-hidden="true"></i></a> 
+                                        <button  class="button is-info" @click="deleteEntry(doc)"><i class="fa fa-trash" aria-hidden="true"></i></button> 
+                                </p>
+
+                            </article>
+
+                        </div>
+                    </div>
+            </section>
+
+            <footer class="footer">
+                    <div class="content has-text-centered">
+                      <p>
+                        <strong>TCPLEVELDB-PANEL</strong> by <a href="https://www.npmjs.com/~yamigr">yamigr</a> 2018.
+                        <div class="container">
+                                <a href="https://www.npmjs.com/package/tcpleveldb" target="_default">
+                                    <div class="tags has-addons">
+                                    <span class="tag">Package</span>
+                                    <span class="tag is-success">tcpleveldb</span>
+                                    </div>
+                                </a> <br>
+    
+                                <a href="https://github.com/yamigr" target="_default">
+                                    <div class="tags has-addons">
+                                    <span class="tag">github</span>
+                                    <span class="tag is-success">yamigr</span>
+                                    </div>
+                                </a>
+                            </div>
+                      </p>
+                    </div>
+                  </footer>
+            </div><!-- .end app -->
+        <script>
+                new Vue({
+                el: '#app',
+                data: {
+                    input: '# hello',
+                    database: {
+                        db: './db',
+                        meta: 'get',
+                        key: '',
+                        value: ''
+                    },
+                    newdb: {
+                        db : '',
+                        host : '',
+                        port : 2222,
+                        password : '',
+                        username : ''
+                    },
+                    opt : {
+                        gt: '',
+                        lt: '',
+                        gte: '',
+                        lte: '',
+                        start: '',
+                        end: '',
+                        reverse: false,
+                        limit: -1
+                    },
+                    opt_example : '',
+                    options: ['get', 'put', 'del', 'stream', 'batch', 'filter', 'update'],
+                    docs: {},
+                    config : {},
+                    edit: false,
+                    addDatabaseActive : false,
+                    err: ''
+                },
+                watch :{
+                    'database.db': function () {
+                        let self = this
+                        this.database.meta = 'stream'
+                        this.$http.post('/api/tcpleveldb', this.database).then(response => {
+                            try{
+                                return self.docs = JSON.parse(response.body.data)
+                            }
+                            catch(e){
+
+                            }
+                            
+                        }, response => {});
+                    }
+                },
+                mounted(){
+                    this.getDatabases()
+                },
+                methods: {
+                    getDatabases : function(){
+                        let self = this
+                        this.$http.get('/api/database').then(response => {
+                            self.database.meta = 'stream'
+                            self.loadData()
+                            self.config = JSON.parse(response.body)
+                        }, response => {
+                        });
+                    },
+                    saveNewDatabase(){
+                        let self = this
+                        this.addDatabaseActive = false
+                        this.$http.post('/api/database', this.newdb).then(response => {
+                            self.getDatabases()
+                        }, response => {});
+                    },
+                    action: function(){
+                        let self = this
+
+                        if(this.database.meta === 'stream' || this.database.meta === 'count'){
+                            this.database.value = JSON.stringify(this.opt)
+                            this.opt_example = this.database.value
+                        }
+                        this.$http.post('/api/tcpleveldb', this.database).then(response => {
+                            let data = JSON.parse(response.body)
+                            if(Array.isArray(data.data)){
+                                self.docs = data.data
+                            }
+                            else{
+                                self.database.value = (typeof data.data.value === 'object') ? JSON.stringify(data.data.value) : data.data.value
+                                self.loadData()
+                            }
+                           
+                        }, response => {});
+                    },
+                    loadData(){
+                        let self = this
+                        let o = Object.assign({}, this.database, { meta : 'stream'})
+                        this.$http.post('/api/tcpleveldb', o).then(response => {
+                            let data = JSON.parse(response.body)
+                            self.docs = data.data
+                            self.err = data.err
+                            console.log(self.err)
+                        }, response => {});
+                    },
+                    setDatabaseProps: function(data){
+                        this.database.meta = 'update'
+                        this.database.key = data.key
+                        this.database.value = (typeof data.value === 'object') ? JSON.stringify(data.value) : data.value
+                    },
+                    getType(d){
+                        return (typeof d === 'string') ? 'text' : 'number'
+                    },
+                    deleteEntry(data){
+                        let self = this
+                        this.$http.post('/api/tcpleveldb', { db : this.database.db, meta : 'del', key: data.key, value: data.value}).then(response => {
+                            self.loadData()
+                        }, response => {});
+                    },
+                    deleteIniDb(){
+                        let self = this
+                        this.$http.post('/api/deleteini', this.database).then(response => {
+                            self.getDatabases()
+                        }, response => {
+                        });
+                    }
+                }
+                })
+        </script>
+	</body>
+</html>
